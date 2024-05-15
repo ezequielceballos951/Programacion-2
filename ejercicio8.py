@@ -1,21 +1,17 @@
-def calcular_factorial(numero):
-    if numero == 0:
-        return 1
-    factorial = 1
-    for i in range(1, numero + 1):
-        factorial *= i
-    return factorial
+import random
+import string
+
+def generar_contraseña():
+    caracteres = string.ascii_letters + string.digits + string.punctuation
+    contraseña = ""
+    for _ in range(12):
+        caracter_aleatorio = random.choice(caracteres)
+        contraseña += caracter_aleatorio
+    return contraseña
 
 def main():
-    try:
-        numero = int(input("Ingrese un número para calcular su factorial: "))
-        if numero < 0:
-            print("El factorial solo está definido para números enteros positivos.")
-        else:
-            factorial = calcular_factorial(numero)
-            print(f"El factorial de {numero} es: {factorial}")
-    except ValueError:
-        print("Por favor, ingrese un número entero válido.")
+    contraseña_generada = generar_contraseña()
+    print("Tu nueva contraseña es:", contraseña_generada)
 
 if __name__ == "__main__":
     main()
