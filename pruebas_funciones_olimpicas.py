@@ -311,4 +311,100 @@ def TABLAS_FRECUENCIAS(lista):  #Aca se ve que funcion de las tablas de frecuenc
             print("Intervalos: ", CALCULAR_INTERVALOS_CLASE(lista))
             print("Amplitud de Intervalos: ", CALCULAR_AMPLITUD_INTERVALOS(lista))
             break
-        
+
+def ESPACIO_FINITO_PROBABILIDADES(eventos):
+    """
+    Calcula el espacio muestral finito de probabilidades.
+    Parámetro:
+    eventos: lista de los eventos posibles.
+    Retorna:
+    Espacio muestral (set) que contiene todos los eventos posibles.
+    """
+    return set(eventos)
+
+def MEDIDA_PROBABILIDAD(evento, espacio_muestral):
+    """
+    Calcula la probabilidad de un evento dado.
+    Parámetros:
+    evento: evento para el cual se desea calcular la probabilidad.
+    espacio_muestral: conjunto de todos los posibles resultados.
+    Retorna:
+    Probabilidad del evento (float).
+    """
+    if evento not in espacio_muestral:
+        return 0
+    return len(evento) / len(espacio_muestral)
+
+def PROBABILIDAD_CONDICIONAL(probabilidad_A, probabilidad_B):
+    """
+    Calcula la probabilidad condicional de A dado B.
+    Parámetros:
+    probabilidad_A: probabilidad del evento A.
+    probabilidad_B: probabilidad del evento B.
+    Retorna:
+    Probabilidad condicional P(A|B) (float).
+    """
+    if probabilidad_B == 0:
+        return "No se puede dividir por cero"
+    return probabilidad_A / probabilidad_B
+
+def INDEPENDENCIA(probabilidad_A, probabilidad_B, probabilidad_A_y_B):
+    """
+    Verifica si dos eventos son independientes.
+    Parámetros:
+    probabilidad_A: probabilidad del evento A.
+    probabilidad_B: probabilidad del evento B.
+    probabilidad_A_y_B: probabilidad de que ocurran A y B simultáneamente.
+    Retorna:
+    Booleano indicando si los eventos son independientes (True) o no (False).
+    """
+    return probabilidad_A_y_B == probabilidad_A * probabilidad_B
+
+def TEOREMA_BAYES(probabilidad_A, probabilidad_B, probabilidad_B_dado_A):
+    """
+    Aplica el Teorema de Bayes para calcular la probabilidad de A dado B.
+    Parámetros:
+    probabilidad_A: probabilidad del evento A.
+    probabilidad_B: probabilidad del evento B.
+    probabilidad_B_dado_A: probabilidad del evento B dado A.
+    Retorna:
+    Probabilidad P(A|B) usando el Teorema de Bayes (float).
+    """
+    if probabilidad_B == 0:
+        return "No se puede dividir por cero"
+    return (probabilidad_B_dado_A * probabilidad_A) / probabilidad_B
+
+# VARIABLES ALEATORIAS Y ESPERANZA MATEMÁTICA
+
+def ESPERANZA_MATEMATICA(valores, probabilidades):
+    """
+    Calcula la esperanza matemática de una variable aleatoria discreta.
+    Parámetros:
+    valores: lista de valores que puede tomar la variable aleatoria.
+    probabilidades: lista de probabilidades asociadas a cada valor.
+    Retorna:
+    Esperanza matemática (float).
+    """
+    return sum(val * prob for val, prob in zip(valores, probabilidades))
+
+def VARIANZA(valores, probabilidades, esperanza):
+    """
+    Calcula la varianza de una variable aleatoria discreta.
+    Parámetros:
+    valores: lista de valores que puede tomar la variable aleatoria.
+    probabilidades: lista de probabilidades asociadas a cada valor.
+    esperanza: esperanza matemática de la variable aleatoria.
+    Retorna:
+    Varianza (float).
+    """
+    return sum((val - esperanza) ** 2 * prob for val, prob in zip(valores, probabilidades))
+
+def DESVIACION_ESTANDAR_VAR_ALEATORIA(varianza):
+    """
+    Calcula la desviación estándar a partir de la varianza.
+    Parámetros:
+    varianza: varianza de la variable aleatoria.
+    Retorna:
+    Desviación estándar (float).
+    """
+    return math.sqrt(varianza)
