@@ -1,153 +1,179 @@
 import math
-from collections import defaultdict
+from scipy.stats import kurtosis
+import scipy.stats as stats
 
-# FUNCIONES BÁSICAS
+# MEDIDAS DE POSICIÓN
 
-def agregar_elementos_input():
-    lista = []
-    numero_muestra = 0
-    print("Ingrese los datos uno por uno, y presione enter para continuar. Ingrese 'FIN' para finalizar.")
-    while True:
-        valor = input(f"Ingrese dato número {numero_muestra + 1}: ")
-        if valor.replace('.', '', 1).isdigit():
-            lista.append(float(valor))
-            numero_muestra += 1
-        elif valor.upper() == "FIN":
-            print("Fin de la muestra")
-            break
-        else:
-            print("Comando no válido, intente de nuevo.")
+def MEDIA(lista):
+    media = sum(lista)/len(lista)
+    return media 
+
+def CALCULAR_MODA(lista):
+    Max_Contador = 0
+    Modas = []
     
-    lista = sorted(lista)
-    return lista
+    for Numero in lista:
+        Cont = 0
+        for Elem in lista:
+            if Elem == Numero:
+                Cont += 1
+        if Cont > Max_Contador:
+            Max_Contador = Cont
+            Modas = [Numero]
+        elif Cont == Max_Contador and Numero not in Modas:
+            Modas.append(Numero)
 
-def media(lista):
-    return round(sum(lista) / len(lista), 4)
-
-def mediana(lista):
-    n = len(lista)
-    lista_ordenada = sorted(lista)
-    if n % 2 == 0:
-        mediana = (lista_ordenada[n // 2 - 1] + lista_ordenada[n // 2]) / 2
+    if len(Modas) == len(set(lista)): # set elimina automáticamente los elementos duplicados y conserva solo uno de cada elemento
+        return "No hay moda"
     else:
-        mediana = lista_ordenada[n // 2]
-    return round(mediana, 4)
+        return Modas
 
-def moda(lista):
-    frecuencias = defaultdict(int)
-    for valor in lista:
-        frecuencias[valor] += 1
-    max_frecuencia = max(frecuencias.values())
-    modas = [valor for valor, frecuencia in frecuencias.items() if frecuencia == max_frecuencia]
-    return modas
-
-def rango(lista):
-    return round(max(lista) - min(lista), 4)
-
-def varianza(lista):
-    media_valor = media(lista)
-    return round(sum((x - media_valor) ** 2 for x in lista) / len(lista), 4)
-
-def desviacion_estandar(lista):
-    return round(math.sqrt(varianza(lista)), 4)
-
-def curtosis(lista):
-    media_valor = media(lista)
-    n = len(lista)
-    s = desviacion_estandar(lista)
-    suma = sum((x - media_valor) ** 4 for x in lista)
-    g = ((1/n) * suma) / (s ** 4) - 3
-    return round(g, 4)
-
-def interpretar_curtosis(g):
-    if g < 0:
-        return "Platicúrtica"
-    elif g == 0:
-        return "Mesocúrtica"
+def CALCULAR_MEDIANA(lista):
+    listaOrdenada=sorted(lista) # Ordena la lista de mayor a menor para luego poder obtener el valor del medio
+    longitudLista=len(listaOrdenada) # Almacena la longitud de la lista (ya ordenada)
+    
+    if longitudLista % 2 == 0: # Verifica si la longitud de la lista ordenada es par
+        medioIzq = listaOrdenada[longitudLista // 2 - 1 ] # Define el indice del medio izquierdo de la lista dividiendo por dos (division entera) y restando 1 para posicionarse a la izquierda
+        medioDer = listaOrdenada[longitudLista // 2 ] # Define el indice del medio derecho de la lista 
+        mediana = (medioIzq + medioDer) / 2 # Suma las variables del medio y las divide por dos respetando la formula para calcular la mediana en listas con una longitud par
+        return mediana
     else:
-        return "Leptocúrtica"
+        mediana = listaOrdenada [longitudLista // 2] # En caso de ser impar se obtiene el indice central 
+        return mediana
 
-def frecuencias(lista):
-    frecuencias = defaultdict(int)
-    for valor in lista:
-        frecuencias[valor] += 1
-    for valor, frecuencia in frecuencias.items():
-        print(f"Valor: {valor}, Frecuencia: {frecuencia}")
+# Calcular promedio (sumatoria de todos los datos / cantidad de datos)
+def CALCULAR_PROMEDIO(lista):
+    if len(lista) == 0:
+        return 0
+    return sum(lista) / len(lista)
 
-# FUNCIONES DE PROBABILIDAD
+def CALCULAR_CUARTILES(lista):
+    Longitud_Lista = len(lista)
+    mediana = CALCULAR_MEDIANA(lista)   # se define la mediana para ser utilizada como q2
 
-def distribucion_binomial(n, p, k):
+    if Longitud_Lista % 2 == 0:
+        mitad_inferior = lista[:Longitud_Lista//2] # obtiene la mitad inferior de la lista utilizando el slicing (comienza al principio de la lista y finaliza en la mitad Longitud_lista//2)
+        mitad_superior = lista[Longitud_Lista//2:] # obtiene la mitad superior de la lista utilizando el slicing (comienza en la mitad Longitud_lista//2 finaliza en el ultimo indice de la lista)
+    else:
+        mitad_inferior = lista[:Longitud_Lista//2] # obtiene la mitad inferior de la lista utilizando el slicing (comienza al principio de la lista y finaliza en la mitad Longitud_lista//2)
+        mitad_superior = lista[Longitud_Lista//2 + 1:] # obtiene la mitad superior de la lista utilizando el slicing (comienza en la mitad Longitud_lista//2 finaliza en el ultimo indice de la lista)
+
+    q1 = CALCULAR_MEDIANA(mitad_inferior) # se calcula la mediana de la mitad inferior
+    q2 = mediana # se define a q2 como la mediana
+    q3 = CALCULAR_MEDIANA(mitad_superior) # se calcula la mediana de la mitad superior
+    
+    return q1 ,q2, q3
+
+# Calcular desviación estándar: raíz cuadrada ((suma((elemento - media)**2))/cantidad de datos - 1)
+def DESVIACION_ESTANDAR(lista):
+    n = len(lista)
+    if n <= 1:
+        return 0
+    promedio = MEDIA(lista)
+    # Calcula la suma de los cuadrados de las diferencias entre cada elemento y el promedio
+    suma_resta_cuadrado = sum((x - promedio) ** 2 for x in lista)
+    # Calcula la desviación estandar dividiendo la suma de las diferencias cuadradas entre n-1
+    # y tomando la raíz cuadrada del resultado
+    desviacion = (suma_resta_cuadrado / (n - 1)) ** 0.5
+    return round(desviacion, 4)
+
+def RANGO(lista):
+    # En la función rango, se resta el menor valor de las muestras al mayor valor de la muestra
+    valor_rango = lista[-1] - lista[0]
+    return valor_rango
+
+# FRECUENCIAS
+
+def CALCULAR_FRECUENCIA_ABSOLUTA(lista):
+    # Creamos un diccionario para almacenar las frecuencias.
+    # Las claves serán los números de muestra y los valores serán la cantidad de veces que se repiten los números.
+    frecuencias = {} 
+    for elemento in lista: # Iteramos sobre cada elemento en la lista
+        if elemento in frecuencias: # Verificamos si el elemento ya está en el diccionario
+            frecuencias[elemento] += 1  # Si el elemento ya está en el diccionario, incrementamos su contador de frecuencia en 1.
+        else:
+            frecuencias[elemento] = 1  # Si el elemento no está en el diccionario, lo agregamos al diccionario con una frecuencia de 1.
+    return frecuencias
+
+def CALCULAR_FRECUENCIA_ABSOLUTA_ACUMULADA(lista):
+    Frecuencias_Absolutas = CALCULAR_FRECUENCIA_ABSOLUTA(lista) # Se obtienen las frecuencias absolutas con la función ya creada
+    Frecuencia_Absoluta_Acumulada = {} # Diccionario para almacenar la frecuencia absoluta acumulada de cada elemento
+    Acumulador = 0 # Variable acumuladora para almacenar la frecuencia acumulada actual
+    for elemento, frecuencia in Frecuencias_Absolutas.items(): # Recorrer las frecuencias absolutas y calcular la frecuencia absoluta acumulada
+        Acumulador += frecuencia # Incrementar el acumulador con la frecuencia actual
+        Frecuencia_Absoluta_Acumulada[elemento] = Acumulador # Asignar la frecuencia absoluta acumulada al elemento
+    return Frecuencia_Absoluta_Acumulada
+
+def SOLO_UN_ELEMENTO(lista):
+    lista_sin_duplicados = []
+    for elemento in lista:
+        if elemento not in lista_sin_duplicados:
+            lista_sin_duplicados.append(elemento)
+    return lista_sin_duplicados
+
+# En esta función se ingresa una lista, y se devuelve otra lista con las frecuencias relativas de cada elemento de la lista (elementos no repetidos)
+# Frecuencia absoluta / cantidad de datos
+def CALCULAR_FRECUENCIA_RELATIVA(lista):
+    # 1. lista para utilizar al final. 2. Una lista con los elementos sin repetir. 3. El diccionario con las frecuencias absolutas de la lista
+    frecuencia_relativa = []
+    frecuencia_absoluta = CALCULAR_FRECUENCIA_ABSOLUTA(lista)
+    lista_simple = SOLO_UN_ELEMENTO(lista)
+    # Se evaluan los elementos que estan en la lista, y utilizando el elemento como key, se busca el valor absoluto del elemento
+    # Al tener la frecuencia absoluta, se la divide por la cantidad de elementos en la lista original. Se agrega SOLO el valor relativo a la lista
+    # en la posición del elemento 
+    for elemento in lista_simple:
+        absoluta = frecuencia_absoluta[(elemento)]
+        frecuencia = absoluta / len(lista)
+        frecuencia_relativa.append(round(frecuencia, 4)) # ver si hay que redondearlo o no
+    # Devuelve una LISTA
+    return frecuencia_relativa
+
+# La frecuencia relativa de x, sumado a las frecuencias relativas de todos los datos anteriores
+def CALCULAR_FRECUENCIA_RELATIVA_ACUMULADA(lista):
+    # Se crea una lista nueva, vacía, que es donde se van a guardar los datos de la acumulada
+    frecuencia_relativa_acumulada = []
+    # Se crea una variable tipo lista que almacena las frecuencias relativas de los elementos de la lista
+    frecuencia_relativa = CALCULAR_FRECUENCIA_RELATIVA(lista)
+    total = 0
+
+    # Se pasa por cada elemento de la lista, y se lo suma al total, el cual va acumulando todos los valores
+    for i in range (len(frecuencia_relativa)):
+        total += frecuencia_relativa[i]
+        frecuencia_relativa_acumulada.append(round(total, 2))
+    # La función devuelve una LISTA con todos los valores de la acumulada, en la posición de los elementos de la lista, ya ordenados de mayor a menor.
+    return frecuencia_relativa_acumulada
+
+# En esta función se calcula la frecuencia porcentual de cada elemento en la lista
+def CALCULAR_FRECUENCIA_PORCENTUAL(lista):
+    # Se llama a la función CALCULAR_FRECUENCIA_RELATIVA para obtener la frecuencia relativa
+    frecuencia_relativa = CALCULAR_FRECUENCIA_RELATIVA(lista)
+    # La expresión "elemento * 100" multiplica cada valor de la lista por 100 para calcular su porcentaje
+    frecuencia_porcentual = [round(elemento * 100, 2) for elemento in frecuencia_relativa]
+    return frecuencia_porcentual
+
+def CALCULAR_FRECUENCIA_PORCENTUAL_ACUMULADA(lista):
+    # Obtiene la frecuencia porcentual utilizando la función CALCULAR_FRECUENCIA_PORCENTUAL
+    frecuencia_porcentual = CALCULAR_FRECUENCIA_PORCENTUAL(lista)
+    frecuencia_porcentual_acumulada = []
+    total = 0
+    # Recorre los elementos de la frecuencia porcentual, sumándolos y añadiéndolos a la lista de la frecuencia porcentual acumulada
+    for i in range(len(frecuencia_porcentual)):
+        total += frecuencia_porcentual[i]
+        frecuencia_porcentual_acumulada.append(round(total, 2))
+    return frecuencia_porcentual_acumulada
+
+# Para calcular la curtosis, se utiliza la función kurtosis de scipy.stats
+def CALCULAR_CURTOSIS(lista):
+    return kurtosis(lista, fisher=True)
+
+# DISTRIBUCIONES
+
+# Función para calcular la probabilidad usando la distribución binomial
+def DISTRIBUCION_BINOMIAL(n, p, k):
     coef_binomial = math.comb(n, k)
     probabilidad = coef_binomial * (p ** k) * ((1 - p) ** (n - k))
-    return round(probabilidad, 4)
+    return probabilidad
 
-def distribucion_poisson(lmbda, k):
-    probabilidad = (math.exp(-lmbda) * (lmbda ** k)) / math.factorial(k)
-    return round(probabilidad, 4)
-
-# MENÚ PRINCIPAL
-
-def menu_estadistica_descriptiva(lista):
-    while True:
-        opcion = int(input("1 = MEDIDAS DE POSICIÓN\n2 = MEDIDAS DE DISPERSIÓN\n3 = FRECUENCIAS\n4 = COEFICIENTE DE CURTOSIS\n5 = VOLVER\n ==> "))
-        if opcion == 1:
-            print(f"Media: {media(lista)}")
-            print(f"Mediana: {mediana(lista)}")
-            modas = moda(lista)
-            print(f"Moda: {', '.join(map(str, modas))}")
-        elif opcion == 2:
-            print(f"Rango: {rango(lista)}")
-            print(f"Varianza: {varianza(lista)}")
-            print(f"Desviación Estándar: {desviacion_estandar(lista)}")
-        elif opcion == 3:
-            frecuencias(lista)
-        elif opcion == 4:
-            g = curtosis(lista)
-            interpretacion = interpretar_curtosis(g)
-            print(f"Coeficiente de Curtosis: {g} ({interpretacion})")
-        elif opcion == 5:
-            break
-        else:
-            print("Comando incorrecto, intente de nuevo.")
-
-def menu_probabilidad_y_estadistica():
-    while True:
-        opcion = int(input("1 = DISTRIBUCIÓN BINOMIAL\n2 = DISTRIBUCIÓN DE POISSON\n3 = VOLVER\n ==> "))
-        if opcion == 1:
-            n = int(input("Ingrese el número de ensayos (n): "))
-            p = float(input("Ingrese la probabilidad de éxito (p): "))
-            k = int(input("Ingrese el número de éxitos deseados (k): "))
-            resultado = distribucion_binomial(n, p, k)
-            print(f"La probabilidad binomial de obtener {k} éxitos en {n} ensayos es: {resultado}")
-        elif opcion == 2:
-            lmbda = float(input("Ingrese el valor esperado de la distribución de Poisson (λ): "))
-            k = int(input("Ingrese el número de éxitos deseados (k): "))
-            resultado = distribucion_poisson(lmbda, k)
-            print(f"La probabilidad de Poisson de obtener {k} éxitos es: {resultado}")
-        elif opcion == 3:
-            break
-        else:
-            print("Comando incorrecto, intente de nuevo.")
-
-def menu_principal():
-    lista = []
-    print("Bienvenido al módulo de Estadística Descriptiva y Probabilidad.")
-    while True:
-        opcion = int(input("1 = INGRESAR DATOS\n2 = ESTADÍSTICA DESCRIPTIVA\n3 = PROBABILIDAD Y ESTADÍSTICA\n4 = SALIR\n ==> "))
-        if opcion == 1:
-            lista = agregar_elementos_input()
-        elif opcion == 2:
-            if lista:
-                menu_estadistica_descriptiva(lista)
-            else:
-                print("No hay datos disponibles. Ingrese los datos primero.")
-        elif opcion == 3:
-            menu_probabilidad_y_estadistica()
-        elif opcion == 4:
-            print("Fin!")
-            break
-        else:
-            print("Comando incorrecto, intente de nuevo.")
-
-if __name__ == "__main__":
-    menu_principal()
+# Función para calcular la probabilidad usando la distribución de Poisson
+def DISTRIBUCION_POISSON(lmbda, k):
+    return (lmbda ** k) * (math.exp(-lmbda)) / math.factorial(k)
